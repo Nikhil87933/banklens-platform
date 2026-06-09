@@ -1,3 +1,9 @@
+from pyspark.dbutils import DBUtils
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder.getOrCreate()
+
+dbutils = DBUtils(spark)
 from pyspark.sql import functions as F
 
 from importlib import import_module

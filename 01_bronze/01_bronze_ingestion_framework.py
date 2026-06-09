@@ -50,10 +50,12 @@ def file_exists(
 ) -> bool:
 
     try:
-        dbutils.fs.ls(path)
+        files = dbutils.fs.ls(path)
+        print("FOUND:", path)
         return True
 
-    except Exception:
+    except Exception as e:
+        print("ERROR:", e)
         return False
 
 

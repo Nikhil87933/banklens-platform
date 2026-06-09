@@ -55,3 +55,67 @@ def file_exists(
 
     except Exception:
         return False
+
+
+def ingest_table(
+    table_name: str,
+    day_number: int,
+    batch_id: str
+):
+
+    print(
+        f"Ingesting {table_name}"
+        f" for day {day_number}"
+    )
+
+    source_path = build_source_path(
+        table_name,
+        day_number
+    )
+
+    print(
+        f"Source Path = {source_path}"
+    )
+
+    if not is_table_expected(
+        table_name,
+        day_number
+    ):
+        print(
+            f"Skipping {table_name}"
+        )
+        return
+
+    if not file_exists(
+        source_path
+    ):
+        print(
+            f"File not found: {source_path}"
+        )
+        return
+
+    df = (
+        spark.read
+        .option("header", "true")
+        .option("delimiter", "|")
+        .option("inferSchema", "false")
+        .option(
+            "rescuedDataColumn",
+            "_rescued_data"
+        )
+        .csv(source_path)
+    )
+
+    source_columns = df.columns
+
+    print(
+        f"Columns found = "
+        f"{len(source_columns)}"
+    )
+
+    source_count = df.count()
+
+    print(
+        f"Rows read = "
+        f"{source_count}"
+    )

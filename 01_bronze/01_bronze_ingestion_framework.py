@@ -1,12 +1,12 @@
 from pyspark.dbutils import DBUtils
 from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+
+from importlib import import_module
 
 spark = SparkSession.builder.getOrCreate()
 
 dbutils = DBUtils(spark)
-from pyspark.sql import functions as F
-
-from importlib import import_module
 
 config = import_module(
     "00_setup.01_config"
@@ -56,12 +56,20 @@ def file_exists(
 ) -> bool:
 
     try:
-        files = dbutils.fs.ls(path)
-        print("FOUND:", path)
+        dbutils.fs.ls(path)
+
+        print(
+            f"FOUND: {path}"
+        )
+
         return True
 
     except Exception as e:
-        print("ERROR:", e)
+
+        print(
+            f"ERROR: {e}"
+        )
+
         return False
 
 
@@ -128,26 +136,26 @@ def ingest_table(
         f"{source_count}"
     )
 
-df = (
-    df
-    .withColumn(
-        "_source_file",
-        F.input_file_name()
+    df = (
+        df
+        .withColumn(
+            "_source_file",
+            F.input_file_name()
+        )
+        .withColumn(
+            "_ingestion_timestamp",
+            F.current_timestamp()
+        )
+        .withColumn(
+            "_day_number",
+            F.lit(day_number)
+        )
+        .withColumn(
+            "_batch_id",
+            F.lit(batch_id)
+        )
     )
-    .withColumn(
-        "_ingestion_timestamp",
-        F.current_timestamp()
-    )
-    .withColumn(
-        "_day_number",
-        F.lit(day_number)
-    )
-    .withColumn(
-        "_batch_id",
-        F.lit(batch_id)
-    )
-)
 
-print(
-    "Metadata columns added"
-)
+    print(
+        "Metadata columns added"
+    )

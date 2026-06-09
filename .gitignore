@@ -1,0 +1,31 @@
+# Data files
+*.csv
+*.parquet
+*.json
+banking_data/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Environment files
+.env
+.env.*
+
+# Databricks
+.databricks/
+*.dbc
+
+# Secrets
+*.pem
+*.key
+secrets/
+config/local_*.py
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/

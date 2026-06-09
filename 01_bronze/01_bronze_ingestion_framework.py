@@ -159,3 +159,24 @@ def ingest_table(
     print(
         "Metadata columns added"
     )
+
+    df = df.withColumn(
+        "_row_hash",
+        F.sha2(
+            F.concat_ws(
+                "||",
+                *[
+                    F.coalesce(
+                        F.col(column_name),
+                        F.lit("")
+                    )
+                    for column_name in source_columns
+                ]
+            ),
+            256
+        )
+    )
+
+    print(
+        "Row hash added"
+    )

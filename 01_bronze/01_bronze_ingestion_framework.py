@@ -127,3 +127,27 @@ def ingest_table(
         f"Rows read = "
         f"{source_count}"
     )
+
+df = (
+    df
+    .withColumn(
+        "_source_file",
+        F.input_file_name()
+    )
+    .withColumn(
+        "_ingestion_timestamp",
+        F.current_timestamp()
+    )
+    .withColumn(
+        "_day_number",
+        F.lit(day_number)
+    )
+    .withColumn(
+        "_batch_id",
+        F.lit(batch_id)
+    )
+)
+
+print(
+    "Metadata columns added"
+)

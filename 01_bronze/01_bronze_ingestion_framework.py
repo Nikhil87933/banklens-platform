@@ -140,7 +140,7 @@ def ingest_table(
         df
         .withColumn(
             "_source_file",
-            F.input_file_name()
+            F.col("_metadata.file_path")
         )
         .withColumn(
             "_ingestion_timestamp",

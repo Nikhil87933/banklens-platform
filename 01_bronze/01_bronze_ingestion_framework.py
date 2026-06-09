@@ -180,3 +180,24 @@ def ingest_table(
     print(
         "Row hash added"
     )
+
+    target_table = (
+        f"{CATALOG_NAME}."
+        f"{BRONZE_SCHEMA}."
+        f"brz_{table_name}"
+    )
+
+    df.write \
+        .format("delta") \
+        .mode("append") \
+        .option(
+            "mergeSchema",
+            "true"
+        ) \
+        .saveAsTable(
+            target_table
+        )
+
+    print(
+        f"Written to {target_table}"
+    )

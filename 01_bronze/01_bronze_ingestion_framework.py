@@ -121,6 +121,47 @@ def write_control_record(
             "banklens.data_quality.pipeline_control"
         )
 
+def write_schema_change_log(
+    table_name,
+    day_number,
+    current_columns
+):
+
+    schema = StructType([
+        StructField("table_name", StringType(), True),
+        StructField("day_number", IntegerType(), True),
+        StructField("detected_at", TimestampType(), True),
+        StructField("previous_columns", StringType(), True),
+        StructField("current_columns", StringType(), True),
+        StructField("columns_added", StringType(), True),
+        StructField("columns_removed", StringType(), True),
+        StructField("columns_renamed", StringType(), True)
+    ])
+
+    schema_df = spark.createDataFrame(
+        [
+            (
+                table_name,
+                int(day_number),
+                spark.sql(
+                    "SELECT current_timestamp()"
+                ).collect()[0][0],
+                "",
+                ",".join(current_columns),
+                "",
+                "",
+                ""
+            )
+        ],
+        schema
+    )
+
+    schema_df.write \
+        .format("delta") \
+        .mode("append") \
+        .saveAsTable(
+            "banklens.data_quality.schema_change_log"
+        )
 
 def is_table_expected(
     table_name: str,
@@ -243,6 +284,12 @@ def ingest_table(
     )
 
     source_columns = df.columns
+
+    write_schema_change_log(
+        table_name=table_name,
+        day_number=day_number,
+        current_columns=source_columns
+    )
 
     print(
         f"Columns found = "

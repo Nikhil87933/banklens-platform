@@ -199,5 +199,6 @@ def ingest_table(
         )
 
     print(
-        f"Written to {target_table}")
+        f"Written to {target_table}"
+    )
     

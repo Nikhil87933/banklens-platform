@@ -127,7 +127,7 @@ def write_control_record(
         )
         """
     )
-     
+    
 def write_schema_change_log(
     table_name,
     day_number,

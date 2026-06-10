@@ -127,7 +127,8 @@ def write_control_record(
         )
         """
     )
-    
+
+
 def write_schema_change_log(
     table_name,
     day_number,
@@ -135,14 +136,14 @@ def write_schema_change_log(
 ):
 
     schema = StructType([
-        StructField("table_name", StringType(), True),
-        StructField("day_number", IntegerType(), True),
-        StructField("detected_at", TimestampType(), True),
-        StructField("previous_columns", StringType(), True),
-        StructField("current_columns", StringType(), True),
-        StructField("columns_added", StringType(), True),
-        StructField("columns_removed", StringType(), True),
-        StructField("columns_renamed", StringType(), True)
+        StructField("table_name",        StringType(),    True),
+        StructField("day_number",        IntegerType(),   True),
+        StructField("detected_at",       TimestampType(), True),
+        StructField("previous_columns",  StringType(),    True),
+        StructField("current_columns",   StringType(),    True),
+        StructField("columns_added",     StringType(),    True),
+        StructField("columns_removed",   StringType(),    True),
+        StructField("columns_renamed",   StringType(),    True),
     ])
 
     schema_df = spark.createDataFrame(
@@ -169,6 +170,7 @@ def write_schema_change_log(
         .saveAsTable(
             "banklens.data_quality.schema_change_log"
         )
+
 
 def is_table_expected(
     table_name: str,

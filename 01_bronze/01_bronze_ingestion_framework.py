@@ -1,6 +1,14 @@
 from pyspark.dbutils import DBUtils
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
+from pyspark.sql.types import (
+    StructType,
+    StructField,
+    StringType,
+    IntegerType,
+    TimestampType,
+    LongType
+)
 
 from importlib import import_module
 
@@ -21,6 +29,7 @@ MASTER_TABLES = config.MASTER_TABLES
 DAILY_TABLES = config.DAILY_TABLES
 TABLE_NAMES = config.TABLE_NAMES
 
+
 def write_audit_log(
     run_id,
     pipeline_layer,
@@ -34,6 +43,20 @@ def write_audit_log(
     status,
     error_message
 ):
+
+    schema = StructType([
+        StructField("run_id",               StringType(),    True),
+        StructField("pipeline_layer",       StringType(),    True),
+        StructField("table_name",           StringType(),    True),
+        StructField("day_number",           IntegerType(),   True),
+        StructField("source_path",          StringType(),    True),
+        StructField("started_at",           TimestampType(), True),
+        StructField("completed_at",         TimestampType(), True),
+        StructField("source_record_count",  LongType(),      True),
+        StructField("target_record_count",  LongType(),      True),
+        StructField("status",               StringType(),    True),
+        StructField("error_message",        StringType(),    True),
+    ])
 
     audit_df = spark.createDataFrame(
         [
@@ -51,19 +74,7 @@ def write_audit_log(
                 error_message
             )
         ],
-        [
-            "run_id",
-            "pipeline_layer",
-            "table_name",
-            "day_number",
-            "source_path",
-            "started_at",
-            "completed_at",
-            "source_record_count",
-            "target_record_count",
-            "status",
-            "error_message"
-        ]
+        schema
     )
 
     audit_df.write \
@@ -72,6 +83,7 @@ def write_audit_log(
         .saveAsTable(
             "banklens.data_quality.pipeline_audit_log"
         )
+
 
 def is_table_expected(
     table_name: str,
@@ -136,7 +148,7 @@ def ingest_table(
     )
 
     started_at = spark.sql(
-    "SELECT current_timestamp()"
+        "SELECT current_timestamp()"
     ).collect()[0][0]
 
     source_path = build_source_path(
@@ -168,7 +180,7 @@ def ingest_table(
             day_number=day_number,
             source_path=source_path,
             started_at=started_at,
-            completed_at=None,
+            completed_at=started_at,
             source_record_count=0,
             target_record_count=0,
             status="FAILED",
@@ -274,7 +286,7 @@ def ingest_table(
     )
 
     completed_at = spark.sql(
-    "SELECT current_timestamp()"
+        "SELECT current_timestamp()"
     ).collect()[0][0]
 
     write_audit_log(
@@ -288,5 +300,5 @@ def ingest_table(
         source_record_count=source_count,
         target_record_count=source_count,
         status="SUCCESS",
-        error_message=None
+        error_message=""
     )

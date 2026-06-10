@@ -85,6 +85,41 @@ def write_audit_log(
         )
 
 
+def write_control_record(
+    table_name,
+    pipeline_layer,
+    day_number
+):
+
+    control_df = spark.createDataFrame(
+        [
+            (
+                table_name,
+                pipeline_layer,
+                day_number,
+                spark.sql(
+                    "SELECT current_timestamp()"
+                ).collect()[0][0],
+                1
+            )
+        ],
+        [
+            "table_name",
+            "pipeline_layer",
+            "last_successful_day",
+            "last_run_at",
+            "total_runs"
+        ]
+    )
+
+    control_df.write \
+        .format("delta") \
+        .mode("append") \
+        .saveAsTable(
+            "banklens.data_quality.pipeline_control"
+        )
+
+
 def is_table_expected(
     table_name: str,
     day_number: int
@@ -302,3 +337,10 @@ def ingest_table(
         status="SUCCESS",
         error_message=""
     )
+
+    write_control_record(
+        table_name=table_name,
+        pipeline_layer="BRONZE",
+        day_number=day_number
+    )
+    

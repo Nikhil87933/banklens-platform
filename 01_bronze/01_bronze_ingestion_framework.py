@@ -21,6 +21,57 @@ MASTER_TABLES = config.MASTER_TABLES
 DAILY_TABLES = config.DAILY_TABLES
 TABLE_NAMES = config.TABLE_NAMES
 
+def write_audit_log(
+    run_id,
+    pipeline_layer,
+    table_name,
+    day_number,
+    source_path,
+    started_at,
+    completed_at,
+    source_record_count,
+    target_record_count,
+    status,
+    error_message
+):
+
+    audit_df = spark.createDataFrame(
+        [
+            (
+                run_id,
+                pipeline_layer,
+                table_name,
+                day_number,
+                source_path,
+                started_at,
+                completed_at,
+                source_record_count,
+                target_record_count,
+                status,
+                error_message
+            )
+        ],
+        [
+            "run_id",
+            "pipeline_layer",
+            "table_name",
+            "day_number",
+            "source_path",
+            "started_at",
+            "completed_at",
+            "source_record_count",
+            "target_record_count",
+            "status",
+            "error_message"
+        ]
+    )
+
+    audit_df.write \
+        .format("delta") \
+        .mode("append") \
+        .saveAsTable(
+            "banklens.data_quality.pipeline_audit_log"
+        )
 
 def is_table_expected(
     table_name: str,
@@ -84,6 +135,10 @@ def ingest_table(
         f" for day {day_number}"
     )
 
+    started_at = spark.sql(
+    "SELECT current_timestamp()"
+    ).collect()[0][0]
+
     source_path = build_source_path(
         table_name,
         day_number
@@ -105,9 +160,25 @@ def ingest_table(
     if not file_exists(
         source_path
     ):
+
+        write_audit_log(
+            run_id=batch_id,
+            pipeline_layer="BRONZE",
+            table_name=table_name,
+            day_number=day_number,
+            source_path=source_path,
+            started_at=started_at,
+            completed_at=None,
+            source_record_count=0,
+            target_record_count=0,
+            status="FAILED",
+            error_message="File not found"
+        )
+
         print(
             f"File not found: {source_path}"
         )
+
         return
 
     df = (
@@ -200,4 +271,22 @@ def ingest_table(
 
     print(
         f"Written to {target_table}"
+    )
+
+    completed_at = spark.sql(
+    "SELECT current_timestamp()"
+    ).collect()[0][0]
+
+    write_audit_log(
+        run_id=batch_id,
+        pipeline_layer="BRONZE",
+        table_name=table_name,
+        day_number=day_number,
+        source_path=source_path,
+        started_at=started_at,
+        completed_at=completed_at,
+        source_record_count=source_count,
+        target_record_count=source_count,
+        status="SUCCESS",
+        error_message=None
     )

@@ -91,25 +91,27 @@ def write_control_record(
     day_number
 ):
 
+    schema = StructType([
+        StructField("table_name", StringType(), True),
+        StructField("pipeline_layer", StringType(), True),
+        StructField("last_successful_day", IntegerType(), True),
+        StructField("last_run_at", TimestampType(), True),
+        StructField("total_runs", IntegerType(), True)
+    ])
+
     control_df = spark.createDataFrame(
         [
             (
                 table_name,
                 pipeline_layer,
-                day_number,
+                int(day_number),
                 spark.sql(
                     "SELECT current_timestamp()"
                 ).collect()[0][0],
                 1
             )
         ],
-        [
-            "table_name",
-            "pipeline_layer",
-            "last_successful_day",
-            "last_run_at",
-            "total_runs"
-        ]
+        schema
     )
 
     control_df.write \
@@ -343,4 +345,3 @@ def ingest_table(
         pipeline_layer="BRONZE",
         day_number=day_number
     )
-    

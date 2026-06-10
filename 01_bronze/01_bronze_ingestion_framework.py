@@ -91,36 +91,43 @@ def write_control_record(
     day_number
 ):
 
-    schema = StructType([
-        StructField("table_name", StringType(), True),
-        StructField("pipeline_layer", StringType(), True),
-        StructField("last_successful_day", IntegerType(), True),
-        StructField("last_run_at", TimestampType(), True),
-        StructField("total_runs", IntegerType(), True)
-    ])
+    spark.sql(
+        f"""
+        MERGE INTO banklens.data_quality.pipeline_control t
+        USING (
+            SELECT
+                '{table_name}' AS table_name,
+                '{pipeline_layer}' AS pipeline_layer,
+                {int(day_number)} AS last_successful_day,
+                current_timestamp() AS last_run_at
+        ) s
+        ON t.table_name = s.table_name
+        AND t.pipeline_layer = s.pipeline_layer
 
-    control_df = spark.createDataFrame(
-        [
-            (
-                table_name,
-                pipeline_layer,
-                int(day_number),
-                spark.sql(
-                    "SELECT current_timestamp()"
-                ).collect()[0][0],
-                1
-            )
-        ],
-        schema
-    )
+        WHEN MATCHED THEN
+        UPDATE SET
+            t.last_successful_day = s.last_successful_day,
+            t.last_run_at = s.last_run_at,
+            t.total_runs = t.total_runs + 1
 
-    control_df.write \
-        .format("delta") \
-        .mode("append") \
-        .saveAsTable(
-            "banklens.data_quality.pipeline_control"
+        WHEN NOT MATCHED THEN
+        INSERT (
+            table_name,
+            pipeline_layer,
+            last_successful_day,
+            last_run_at,
+            total_runs
         )
-
+        VALUES (
+            s.table_name,
+            s.pipeline_layer,
+            s.last_successful_day,
+            s.last_run_at,
+            1
+        )
+        """
+    )
+     
 def write_schema_change_log(
     table_name,
     day_number,

@@ -153,6 +153,12 @@ def process_table(
             error_message=""
         )
 
+        audit_utils.write_control_record(
+            table_name=table_name,
+            pipeline_layer="SILVER",
+            day_number=0
+        )
+
         print(
             f"Source Rows = "
             f"{source_count}"

@@ -36,3 +36,7 @@ Thumbs.db
 # Virtual environments
 venv/
 .venv/
+
+metadata_env/metadata_env/
+metadata_env/
+metadata_env/

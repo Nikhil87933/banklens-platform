@@ -121,6 +121,12 @@ def process_table(
             table_name
         )
 
+        audit_utils.write_schema_change_log(
+            table_name=table_name,
+            day_number=0,
+            current_columns=df.columns
+        )
+
         (
             df,
             source_count,

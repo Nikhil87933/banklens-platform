@@ -59,6 +59,11 @@ metadata_df = spark.createDataFrame(
     ]
 )
 
-display(
-    metadata_df
+print(
+    f"Total Rows = {metadata_df.count()}"
+)
+
+metadata_df.show(
+    100,
+    truncate=False
 )

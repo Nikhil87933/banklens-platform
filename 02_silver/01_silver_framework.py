@@ -13,6 +13,10 @@ audit_utils = import_module(
     "99_utils.audit_utils"
 )
 
+metrics_utils = import_module(
+    "99_utils.metrics_utils"
+)
+
 CATALOG_NAME = config.CATALOG_NAME
 
 BRONZE_SCHEMA = config.BRONZE_SCHEMA
@@ -163,6 +167,15 @@ def process_table(
             table_name=table_name,
             pipeline_layer="SILVER",
             day_number=0
+        )
+
+        metrics_utils.write_pipeline_metrics(
+            run_id=run_id,
+            pipeline_layer="SILVER",
+            table_name=table_name,
+            source_record_count=source_count,
+            target_record_count=target_count,
+            duplicates_removed=duplicates_removed
         )
 
         print(

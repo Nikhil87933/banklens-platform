@@ -169,13 +169,41 @@ def process_table(
             day_number=0
         )
 
+        processing_time_seconds = (
+            completed_at - started_at
+        ).total_seconds()
+
+        duplicate_percentage = round(
+            (
+                duplicates_removed
+                / source_count
+            ) * 100,
+            2
+        )
+
+        if processing_time_seconds > 0:
+
+            rows_per_second = round(
+                target_count
+                / processing_time_seconds,
+                2
+            )
+
+        else:
+
+            rows_per_second = 0
+
         metrics_utils.write_pipeline_metrics(
             run_id=run_id,
             pipeline_layer="SILVER",
             table_name=table_name,
+            status="SUCCESS",
             source_record_count=source_count,
             target_record_count=target_count,
-            duplicates_removed=duplicates_removed
+            duplicates_removed=duplicates_removed,
+            duplicate_percentage=duplicate_percentage,
+            processing_time_seconds=processing_time_seconds,
+            rows_per_second=rows_per_second
         )
 
         print(

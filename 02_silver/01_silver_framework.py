@@ -9,6 +9,10 @@ config = import_module(
     "00_setup.01_config"
 )
 
+audit_utils = import_module(
+    "99_utils.audit_utils"
+)
+
 CATALOG_NAME = config.CATALOG_NAME
 
 BRONZE_SCHEMA = config.BRONZE_SCHEMA
@@ -48,12 +52,21 @@ def deduplicate_records(
 
     after_count = df.count()
 
-    print(
-        f"Duplicates removed = "
-        f"{before_count - after_count}"
+    duplicates_removed = (
+        before_count - after_count
     )
 
-    return df
+    print(
+        f"Duplicates removed = "
+        f"{duplicates_removed}"
+    )
+
+    return (
+        df,
+        before_count,
+        after_count,
+        duplicates_removed
+    )
 
 
 def write_silver_table(
@@ -90,26 +103,93 @@ def write_silver_table(
 
 
 def process_table(
-    table_name: str
+    table_name: str,
+    run_id: str
 ):
 
     print(
         f"Processing {table_name}"
     )
 
-    df = read_bronze_table(
-        table_name
-    )
+    started_at = spark.sql(
+        "SELECT current_timestamp()"
+    ).collect()[0][0]
 
-    df = deduplicate_records(
-        df
-    )
+    try:
 
-    write_silver_table(
-        df,
-        table_name
-    )
+        df = read_bronze_table(
+            table_name
+        )
 
-    print(
-        f"Completed {table_name}"
-    )
+        (
+            df,
+            source_count,
+            target_count,
+            duplicates_removed
+        ) = deduplicate_records(
+            df
+        )
+
+        write_silver_table(
+            df,
+            table_name
+        )
+
+        completed_at = spark.sql(
+            "SELECT current_timestamp()"
+        ).collect()[0][0]
+
+        audit_utils.write_audit_log(
+            run_id=run_id,
+            pipeline_layer="SILVER",
+            table_name=table_name,
+            day_number=0,
+            source_path="BRONZE_TABLE",
+            started_at=started_at,
+            completed_at=completed_at,
+            source_record_count=source_count,
+            target_record_count=target_count,
+            status="SUCCESS",
+            error_message=""
+        )
+
+        print(
+            f"Source Rows = "
+            f"{source_count}"
+        )
+
+        print(
+            f"Target Rows = "
+            f"{target_count}"
+        )
+
+        print(
+            f"Duplicates Removed = "
+            f"{duplicates_removed}"
+        )
+
+        print(
+            f"Completed {table_name}"
+        )
+
+    except Exception as e:
+
+        completed_at = spark.sql(
+            "SELECT current_timestamp()"
+        ).collect()[0][0]
+
+        audit_utils.write_audit_log(
+            run_id=run_id,
+            pipeline_layer="SILVER",
+            table_name=table_name,
+            day_number=0,
+            source_path="BRONZE_TABLE",
+            started_at=started_at,
+            completed_at=completed_at,
+            source_record_count=0,
+            target_record_count=0,
+            status="FAILED",
+            error_message=str(e)
+        )
+
+        raise e

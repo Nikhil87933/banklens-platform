@@ -30,16 +30,17 @@ customer_master,kyc_status,STRING,,True
 customer_master,preferred_channel,STRING,,True
 customer_master,nps_score,INTEGER,,True
 customer_master,segment_code,STRING,,True
-customer_master,relationship_manager_id,DECIMAL,,True
+customer_master,relationship_manager_id,STRING,,True
 customer_master,marketing_consent,BOOLEAN,,True
 customer_master,created_at,TIMESTAMP,yyyy-MM-dd HH:mm:ss,True
 customer_master,updated_at,TIMESTAMP,yyyy-MM-dd HH:mm:ss,True
+customer_master,is_churn,BOOLEAN,,True
 account_master,account_id,STRING,,True
 account_master,customer_id,STRING,,True
 account_master,account_type,STRING,,True
 account_master,product_code,STRING,,True
 account_master,open_date,DATE,yyyy-MM-dd,True
-account_master,close_date,STRING,,True
+account_master,close_date,DATE,yyyy-MM-dd,True
 account_master,account_status,STRING,,True
 account_master,currency_code,STRING,,True
 account_master,current_balance,DECIMAL,,True
@@ -77,7 +78,7 @@ product_holdings,customer_id,STRING,,True
 product_holdings,product_category,STRING,,True
 product_holdings,product_code,STRING,,True
 product_holdings,start_date,DATE,yyyy-MM-dd,True
-product_holdings,end_date,STRING,,True
+product_holdings,end_date,DATE,yyyy-MM-dd,True
 product_holdings,status,STRING,,True
 product_holdings,is_primary,BOOLEAN,,True
 device_events,event_id,STRING,,True
@@ -144,15 +145,6 @@ card_transaction_fact,is_disputed,BOOLEAN,,True
 card_transaction_fact,dispute_reason,STRING,,True
 card_transaction_fact,auth_code,STRING,,True
 card_transaction_fact,batch_id,STRING,,True
-digital_activity,activity_id,STRING,,True
-digital_activity,customer_id,STRING,,True
-digital_activity,session_id,STRING,,True
-digital_activity,activity_timestamp,TIMESTAMP,yyyy-MM-dd HH:mm:ss,True
-digital_activity,activity_type,STRING,,True
-digital_activity,channel,STRING,,True
-digital_activity,feature_area,STRING,,True
-digital_activity,duration_seconds,INTEGER,,True
-digital_activity,is_completed,BOOLEAN,,True
 account_balance_snapshot,snapshot_id,STRING,,True
 account_balance_snapshot,account_id,STRING,,True
 account_balance_snapshot,customer_id,STRING,,True
@@ -166,6 +158,15 @@ account_balance_snapshot,debit_count,INTEGER,,True
 account_balance_snapshot,total_credits,DECIMAL,,True
 account_balance_snapshot,total_debits,DECIMAL,,True
 account_balance_snapshot,fee_amount,DECIMAL,,True
+digital_activity,activity_id,STRING,,True
+digital_activity,customer_id,STRING,,True
+digital_activity,session_id,STRING,,True
+digital_activity,activity_timestamp,TIMESTAMP,yyyy-MM-dd HH:mm:ss,True
+digital_activity,activity_type,STRING,,True
+digital_activity,channel,STRING,,True
+digital_activity,feature_area,STRING,,True
+digital_activity,duration_seconds,INTEGER,,True
+digital_activity,is_completed,BOOLEAN,,True
 support_tickets,ticket_id,STRING,,True
 support_tickets,customer_id,STRING,,True
 support_tickets,account_id,STRING,,True

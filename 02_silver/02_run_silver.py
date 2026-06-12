@@ -14,22 +14,7 @@ print(
 )
 
 TABLES = [
-
-    "merchant_reference",
-    "market_rates",
-
-    "customer_master",
-    "account_master",
-    "loan_master",
-    "product_holdings",
-
-    "transaction_fact",
-    "card_transaction_fact",
-    "account_balance_snapshot",
-
-    "device_events",
-    "digital_activity",
-    "support_tickets"
+    "customer_master"
 ]
 
 for table_name in TABLES:

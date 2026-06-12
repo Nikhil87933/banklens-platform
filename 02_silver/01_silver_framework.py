@@ -43,6 +43,148 @@ def read_bronze_table(
 
     return df
 
+def read_column_mapping(
+    table_name: str
+):
+
+    metadata_table = (
+        f"{CATALOG_NAME}.metadata.column_mapping"
+    )
+
+    print(
+        f"Reading metadata for {table_name}"
+    )
+
+    metadata_df = (
+        spark.table(
+            metadata_table
+        )
+        .filter(
+            F.col("table_name") == table_name
+        )
+        .filter(
+            F.col("is_active") == True
+        )
+    )
+
+    metadata_count = metadata_df.count()
+
+    print(
+        f"Metadata rows found = "
+        f"{metadata_count}"
+    )
+
+    return metadata_df
+
+def apply_standardization(
+    df,
+    table_name: str
+):
+
+    metadata_df = read_column_mapping(
+        table_name
+    )
+
+    metadata_rows = (
+        metadata_df.collect()
+    )
+
+    print(
+        f"Applying standardization for "
+        f"{table_name}"
+    )
+
+    for row in metadata_rows:
+
+        column_name = row["column_name"]
+
+        target_type = (
+            row["target_type"]
+            .upper()
+        )
+
+        format_string = (
+            row["format_string"]
+        )
+
+        if column_name not in df.columns:
+
+            print(
+                f"Skipping missing column "
+                f"{column_name}"
+            )
+
+            continue
+
+        print(
+            f"Converting "
+            f"{column_name} -> "
+            f"{target_type}"
+        )
+
+        if target_type == "STRING":
+
+            df = df.withColumn(
+                column_name,
+                F.col(
+                    column_name
+                ).cast("string")
+            )
+
+        elif target_type == "INTEGER":
+
+            df = df.withColumn(
+                column_name,
+                F.col(
+                    column_name
+                ).cast("int")
+            )
+
+        elif target_type == "DECIMAL":
+
+            df = df.withColumn(
+                column_name,
+                F.col(
+                    column_name
+                ).cast(
+                    "decimal(18,2)"
+                )
+            )
+
+        elif target_type == "BOOLEAN":
+
+            df = df.withColumn(
+                column_name,
+                F.col(
+                    column_name
+                ).cast("boolean")
+            )
+
+        elif target_type == "DATE":
+
+            df = df.withColumn(
+                column_name,
+                F.to_date(
+                    F.col(
+                        column_name
+                    ),
+                    format_string
+                )
+            )
+
+        elif target_type == "TIMESTAMP":
+
+            df = df.withColumn(
+                column_name,
+                F.to_timestamp(
+                    F.col(
+                        column_name
+                    ),
+                    format_string
+                )
+            )
+
+    return df
 
 def deduplicate_records(
     df
@@ -129,6 +271,11 @@ def process_table(
             table_name=table_name,
             day_number=0,
             current_columns=df.columns
+        )
+
+        df = apply_standardization(
+            df,
+            table_name
         )
 
         (

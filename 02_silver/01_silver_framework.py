@@ -137,7 +137,7 @@ def apply_standardization(
                 column_name,
                 F.col(
                     column_name
-                ).cast("int")
+                ).cast("double").cast("int")
             )
 
         elif target_type == "DECIMAL":

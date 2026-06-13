@@ -1,4 +1,5 @@
 from pyspark.sql import functions as F
+from marts.loan_portfolio import build_loan_portfolio
 
 
 def build_customer_360(spark):
@@ -98,3 +99,23 @@ gold_df = build_customer_360(spark)
 
 print("Customer 360 Gold created")
 print("Rows =", gold_df.count())
+
+loan_df = build_loan_portfolio(spark)
+
+(
+    loan_df.write
+    .format("delta")
+    .mode("overwrite")
+    .saveAsTable(
+        "banklens.gold.gld_loan_portfolio"
+    )
+)
+
+print(
+    "Loan Portfolio Gold created"
+)
+
+print(
+    "Rows =",
+    loan_df.count()
+)

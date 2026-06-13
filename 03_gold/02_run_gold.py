@@ -2,6 +2,7 @@ from pyspark.sql import functions as F
 from marts.loan_portfolio import build_loan_portfolio
 from marts.fraud_features import build_fraud_features
 from marts.churn_features import build_churn_features
+from marts.executive_kpis import build_executive_kpis
 
 
 def build_customer_360(spark):
@@ -141,5 +142,16 @@ churn_df = build_churn_features(spark)
     .mode("overwrite")
     .saveAsTable(
         "banklens.gold.gld_churn_features"
+    )
+)
+
+kpi_df = build_executive_kpis(spark)
+
+(
+    kpi_df.write
+    .format("delta")
+    .mode("overwrite")
+    .saveAsTable(
+        "banklens.gold.gld_executive_kpis"
     )
 )

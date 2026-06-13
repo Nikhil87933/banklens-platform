@@ -1,5 +1,7 @@
 from pyspark.sql import functions as F
 from marts.loan_portfolio import build_loan_portfolio
+from marts.fraud_features import build_fraud_features
+from marts.churn_features import build_churn_features
 
 
 def build_customer_360(spark):
@@ -118,4 +120,26 @@ print(
 print(
     "Rows =",
     loan_df.count()
+)
+
+fraud_df = build_fraud_features(spark)
+
+(
+    fraud_df.write
+    .format("delta")
+    .mode("overwrite")
+    .saveAsTable(
+        "banklens.gold.gld_fraud_features"
+    )
+)
+
+churn_df = build_churn_features(spark)
+
+(
+    churn_df.write
+    .format("delta")
+    .mode("overwrite")
+    .saveAsTable(
+        "banklens.gold.gld_churn_features"
+    )
 )

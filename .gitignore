@@ -1,5 +1,8 @@
 # Data files
 *.csv
+
+!00_setup/metadata/column_mapping.csv
+
 *.parquet
 *.json
 banking_data/
@@ -33,3 +36,11 @@ Thumbs.db
 # Virtual environments
 venv/
 .venv/
+
+metadata_env/metadata_env/
+metadata_env/
+metadata_env/
+banklens_app.py
+banklens_gold_checkpoint.zip
+banklens_platform_checkpoint.zip
+streamlit_env/

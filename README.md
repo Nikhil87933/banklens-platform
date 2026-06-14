@@ -176,3 +176,17 @@ Business Value:
 
 - Faster information access
 - Improved operational efficiency
+
+## Workflow Orchestration
+
+The platform follows a dependency-driven DAG.
+
+Bronze Ingestion
+↓
+Silver Standardisation
+↓
+Gold Data Marts
+↓
+Dashboards
+
+Execution is controlled through Databricks Workflows.

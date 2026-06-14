@@ -1,8 +1,6 @@
 # Data files
 *.csv
 
-!00_setup/metadata/column_mapping.csv
-
 *.parquet
 *.json
 banking_data/

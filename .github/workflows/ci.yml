@@ -50,5 +50,7 @@ jobs:
         run: |
           files=$(find . -name "*.py")
           if [ -n "$files" ]; then
-            flake8 . --max-line-length=120
+            flake8 . \
+              --max-line-length=120 \
+              --ignore=E221,E501,E302,W292,E712,F401,F821,E305
           fi

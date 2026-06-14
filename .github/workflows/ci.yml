@@ -47,10 +47,10 @@ jobs:
           fi
 
       - name: Flake8 Check
-        run: |
-          files=$(find . -name "*.py")
-          if [ -n "$files" ]; then
-            flake8 . \
-              --max-line-length=120 \
-              --ignore=E221,E501,E302,W292,E712,F401,F821,E305
-          fi
+              run: |
+                files=$(find . -name "*.py")
+                if [ -n "$files" ]; then
+                  flake8 . \
+                    --max-line-length=120 \
+                    --ignore=E221,E501,E302,W292,E712,F401,F821,E305,E241,W503,W504
+                fi

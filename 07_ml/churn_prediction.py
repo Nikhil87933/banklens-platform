@@ -1,5 +1,6 @@
 from pyspark.sql import functions as F
 import pandas as pd
+from datetime import datetime
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
@@ -83,6 +84,78 @@ model.fit(X_train, y_train)
 predictions = model.predict(X_test)
 
 probabilities = model.predict_proba(X_test)[:, 1]
+
+# --------------------------------------------------
+# Score Entire Dataset
+# --------------------------------------------------
+
+full_probabilities = model.predict_proba(X)[:, 1]
+
+pdf["churn_probability"] = full_probabilities
+
+pdf["churn_prediction"] = (
+    pdf["churn_probability"] >= 0.50
+)
+
+pdf["risk_band"] = "LOW"
+
+pdf.loc[
+    pdf["churn_probability"] >= 0.70,
+    "risk_band"
+] = "HIGH"
+
+pdf.loc[
+    (
+        pdf["churn_probability"] >= 0.40
+    )
+    &
+    (
+        pdf["churn_probability"] < 0.70
+    ),
+    "risk_band"
+] = "MEDIUM"
+
+pdf["prediction_timestamp"] = datetime.now()
+
+# --------------------------------------------------
+# Create Prediction Table
+# --------------------------------------------------
+
+prediction_df = pdf[
+    [
+        "customer_id",
+        "churn_probability",
+        "churn_prediction",
+        "risk_band",
+        "prediction_timestamp",
+    ]
+]
+
+spark_prediction_df = spark.createDataFrame(
+    prediction_df
+)
+
+spark.sql(
+    """
+    CREATE SCHEMA IF NOT EXISTS banklens.ml
+    """
+)
+
+spark_prediction_df.write \
+    .format("delta") \
+    .mode("overwrite") \
+    .saveAsTable(
+        "banklens.ml.churn_predictions"
+    )
+
+print(
+    "Churn Predictions Created"
+)
+
+print(
+    "Rows =",
+    spark_prediction_df.count()
+)
 
 # --------------------------------------------------
 # Metrics

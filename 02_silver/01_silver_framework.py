@@ -22,6 +22,28 @@ CATALOG_NAME = config.CATALOG_NAME
 BRONZE_SCHEMA = config.BRONZE_SCHEMA
 SILVER_SCHEMA = config.SILVER_SCHEMA
 
+def get_next_silver_day(
+    table_name: str
+):
+
+    bronze_day = (
+        audit_utils.get_last_successful_day(
+            table_name,
+            "BRONZE"
+        )
+    )
+
+    silver_day = (
+        audit_utils.get_last_successful_day(
+            table_name,
+            "SILVER"
+        )
+    )
+
+    if bronze_day > silver_day:
+        return silver_day + 1
+
+    return None
 
 def read_bronze_table(
     table_name: str
@@ -263,8 +285,29 @@ def process_table(
 
     try:
 
-        df = read_bronze_table(
+        next_day = get_next_silver_day(
             table_name
+        )
+
+        if next_day is None:
+
+            print(
+                f"{table_name} already up to date"
+            )
+
+            return
+
+        print(
+            f"{table_name} -> Processing Day {next_day}"
+        )
+
+        df = (
+            read_bronze_table(
+                table_name
+            )
+            .filter(
+                F.col("_day_number") == next_day
+            )
         )
 
         audit_utils.write_schema_change_log(
@@ -300,7 +343,7 @@ def process_table(
             run_id=run_id,
             pipeline_layer="SILVER",
             table_name=table_name,
-            day_number=0,
+            day_number=next_day,
             source_path="BRONZE_TABLE",
             started_at=started_at,
             completed_at=completed_at,
@@ -313,7 +356,7 @@ def process_table(
         audit_utils.write_control_record(
             table_name=table_name,
             pipeline_layer="SILVER",
-            day_number=0
+            day_number=next_day
         )
 
         processing_time_seconds = (

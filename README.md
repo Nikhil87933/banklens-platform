@@ -1,6 +1,6 @@
-# BankLens – End-to-End Banking Data & AI Platform
+# BankLens – End-to-End Banking Data & AI Platform 
 
-## Overview
+## Overview of the project
 
 BankLens is an end-to-end banking data platform built on Databricks using a Medallion Architecture (Bronze, Silver, Gold) approach. The project simulates how a modern bank ingests, standardizes, governs, analyzes, and predicts customer behavior using Data Engineering and Machine Learning.
 

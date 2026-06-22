@@ -19,6 +19,42 @@ batch_id = str(
 
 for table_name in config.TABLE_NAMES:
 
+    # STATIC + MASTER tables load only once
+
+    if (
+        table_name in config.STATIC_TABLES
+        or table_name in config.MASTER_TABLES
+    ):
+
+        last_day = (
+            audit_utils.get_last_successful_day(
+                table_name,
+                "BRONZE"
+            )
+        )
+
+        if last_day == 0:
+
+            print(
+                f"{table_name} -> Initial Load Day 1"
+            )
+
+            framework.ingest_table(
+                table_name,
+                1,
+                batch_id
+            )
+
+        else:
+
+            print(
+                f"{table_name} -> Already Loaded"
+            )
+
+        continue
+
+    # DAILY tables load incrementally
+
     last_day = (
         audit_utils.get_last_successful_day(
             table_name,
@@ -37,7 +73,3 @@ for table_name in config.TABLE_NAMES:
         next_day,
         batch_id
     )
-
-print(
-    "Bronze load complete"
-)

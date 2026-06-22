@@ -1,56 +1,67 @@
 name: BankLens CI
 
 on:
-  pull_request:
-    branches:
-      - main
+pull_request:
+branches:
+- main
 
 jobs:
-  validate:
-    runs-on: ubuntu-latest
+validate:
+runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+```
+steps:
+  - name: Checkout Repository
+    uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+  - name: Setup Python
+    uses: actions/setup-python@v5
+    with:
+      python-version: "3.11"
 
-      - name: Install flake8
-        run: |
-          pip install flake8
+  - name: Install Dependencies
+    run: |
+      pip install flake8 pytest
 
-      - name: Check Project Structure
-        run: |
-          test -d 00_setup
-          test -d 01_bronze
-          test -d 02_silver
-          test -d 03_gold
-          test -d 04_data_quality
-          test -d 05_workflows
-          test -d 99_utils
+  - name: Check Project Structure
+    run: |
+      test -d 00_setup
+      test -d 01_bronze
+      test -d 02_silver
+      test -d 03_gold
+      test -d 04_data_quality
+      test -d 05_workflows
+      test -d 06_metadata
+      test -d 07_ml
+      test -d 99_utils
 
-      - name: Dangerous File Check
-        run: |
-          if find . -type f \( -name "*.csv" -o -name "*.env" -o -name "*.pem" -o -name "*.key" \) | grep .; then
-            echo "Dangerous files detected"
-            exit 1
-          fi
+  - name: Dangerous File Check
+    run: |
+      if find . -type f \( -name "*.csv" -o -name "*.env" -o -name "*.pem" -o -name "*.key" \) | grep .; then
+        echo "Dangerous files detected"
+        exit 1
+      fi
 
-      - name: Python Syntax Check
-        run: |
-          files=$(find . -name "*.py")
-          if [ -n "$files" ]; then
-            python -m py_compile $files
-          fi
+  - name: Python Syntax Check
+    run: |
+      find . -name "*.py" -exec python -m py_compile {} \;
 
-      - name: Flake8 Check
-              run: |
-                files=$(find . -name "*.py")
-                if [ -n "$files" ]; then
-                  flake8 . \
-                    --max-line-length=120 \
-                    --ignore=E221,E501,E302,W292,E712,F401,F821,E305,E241,W503,W504
-                fi
+  - name: Flake8 Check
+    run: |
+      flake8 \
+      00_setup \
+      01_bronze \
+      02_silver \
+      03_gold \
+      04_data_quality \
+      06_metadata \
+      07_ml \
+      99_utils \
+      tests \
+      --max-line-length=120 \
+      --ignore=E221,E501,E302,W292,E712,F401,F821,E305,E241,W503,W504
+
+  - name: Run Tests
+    run: |
+      pytest tests/ -v
+```

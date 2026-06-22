@@ -155,3 +155,23 @@ def write_schema_change_log(
             "banklens.data_quality.schema_change_log"
         )
     )
+
+def get_last_successful_day(
+    table_name,
+    pipeline_layer="BRONZE"
+):
+
+    result = spark.sql(
+        f"""
+        SELECT
+            COALESCE(
+                MAX(last_successful_day),
+                0
+            ) AS last_day
+        FROM banklens.data_quality.pipeline_control
+        WHERE table_name = '{table_name}'
+        AND pipeline_layer = '{pipeline_layer}'
+        """
+    ).collect()
+
+    return result[0]["last_day"]

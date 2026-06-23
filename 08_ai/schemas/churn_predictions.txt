@@ -1,0 +1,9 @@
+
+Table: banklens.ml.churn_predictions
+
+Columns:
+customer_id
+churn_probability
+churn_prediction
+risk_band
+prediction_timestamp

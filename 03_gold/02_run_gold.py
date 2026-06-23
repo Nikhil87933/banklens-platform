@@ -1,9 +1,23 @@
+import uuid
+
+from datetime import datetime
+
+from importlib import import_module
+
 from pyspark.sql import functions as F
+
 from marts.loan_portfolio import build_loan_portfolio
 from marts.fraud_features import build_fraud_features
 from marts.churn_features import build_churn_features
 from marts.executive_kpis import build_executive_kpis
 
+gold_framework = import_module(
+    "03_gold.01_gold_framework"
+)
+
+run_id = str(
+    uuid.uuid4()
+)
 
 def build_customer_360(spark):
 
@@ -100,8 +114,18 @@ gold_df = build_customer_360(spark)
     )
 )
 
+row_count = gold_df.count()
+
+gold_framework.register_gold_run(
+    mart_name="customer_360",
+    run_id=run_id,
+    started_at=datetime.now(),
+    completed_at=datetime.now(),
+    row_count=row_count
+)
+
 print("Customer 360 Gold created")
-print("Rows =", gold_df.count())
+print("Rows =", row_count)
 
 loan_df = build_loan_portfolio(spark)
 
@@ -112,6 +136,16 @@ loan_df = build_loan_portfolio(spark)
     .saveAsTable(
         "banklens.gold.gld_loan_portfolio"
     )
+)
+
+row_count = loan_df.count()
+
+gold_framework.register_gold_run(
+    mart_name="loan_portfolio",
+    run_id=run_id,
+    started_at=datetime.now(),
+    completed_at=datetime.now(),
+    row_count=row_count
 )
 
 print(
@@ -134,6 +168,16 @@ fraud_df = build_fraud_features(spark)
     )
 )
 
+row_count = fraud_df.count()
+
+gold_framework.register_gold_run(
+    mart_name="fraud_features",
+    run_id=run_id,
+    started_at=datetime.now(),
+    completed_at=datetime.now(),
+    row_count=row_count
+)
+
 churn_df = build_churn_features(spark)
 
 (
@@ -145,6 +189,16 @@ churn_df = build_churn_features(spark)
     )
 )
 
+row_count = churn_df.count()
+
+gold_framework.register_gold_run(
+    mart_name="churn_features",
+    run_id=run_id,
+    started_at=datetime.now(),
+    completed_at=datetime.now(),
+    row_count=row_count
+)
+
 kpi_df = build_executive_kpis(spark)
 
 (
@@ -154,4 +208,14 @@ kpi_df = build_executive_kpis(spark)
     .saveAsTable(
         "banklens.gold.gld_executive_kpis"
     )
+)
+
+row_count = kpi_df.count()
+
+gold_framework.register_gold_run(
+    mart_name="executive_kpis",
+    run_id=run_id,
+    started_at=datetime.now(),
+    completed_at=datetime.now(),
+    row_count=row_count
 )

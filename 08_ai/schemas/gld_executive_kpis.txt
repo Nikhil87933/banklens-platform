@@ -1,0 +1,9 @@
+Table: banklens.gold.gld_executive_kpis
+
+total_customers bigint
+total_accounts bigint
+total_loans bigint
+total_deposits decimal(38,18)
+total_loan_book decimal(38,18)
+total_digital_events bigint
+total_support_tickets bigint

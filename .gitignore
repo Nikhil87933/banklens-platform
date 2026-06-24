@@ -42,3 +42,15 @@ banklens_app.py
 banklens_gold_checkpoint.zip
 banklens_platform_checkpoint.zip
 streamlit_env/
+
+metadata_env/
+venv/
+.venv/
+
+__pycache__/
+*.pyc
+
+.env
+*.log
+
+banklens-platform-clean.zip

@@ -1,0 +1,12 @@
+Table: banklens.gold.gld_loan_portfolio
+
+loan_type string
+property_state string
+loan_count bigint
+customer_count bigint
+total_original_principal decimal(28,2)
+total_outstanding_balance decimal(28,2)
+avg_interest_rate decimal(22,6)
+arrears_customer_count bigint
+total_arrears_amount decimal(28,2)
+avg_lvr decimal(22,6)

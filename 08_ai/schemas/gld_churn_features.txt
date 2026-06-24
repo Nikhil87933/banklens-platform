@@ -1,0 +1,13 @@
+Table: banklens.gold.gld_churn_features
+
+customer_id string
+customer_type string
+customer_since_date date
+is_churn boolean
+nps_score int
+digital_sessions bigint
+support_ticket_count bigint
+product_count bigint
+total_accounts bigint
+total_balance decimal(28,2)
+tenure_days int

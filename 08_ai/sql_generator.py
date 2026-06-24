@@ -1,74 +1,134 @@
-import subprocess
 from pathlib import Path
+from intent_router import get_schema_files
+from ollama_client import ask_ollama
 
 
-MODEL_NAME = "qwen2.5:7b"
+def load_schemas(schema_files):
 
-
-def load_schema():
-
-    schema_path = (
+    schema_dir = (
         Path(__file__).parent
         / "schemas"
-        / "churn_predictions.txt"
     )
 
-    with open(schema_path, "r") as f:
-        return f.read()
+    schemas = []
+
+    for file_name in schema_files:
+
+        with open(
+            schema_dir / file_name,
+            "r"
+        ) as f:
+
+            schemas.append(
+                f.read()
+            )
+
+    return "\n\n".join(
+        schemas
+    )
 
 
 def build_prompt(question):
 
-    schema = load_schema()
+    schema_files = get_schema_files(
+        question
+    )
+
+    print(
+        "Schemas Used:",
+        schema_files
+    )
+
+    schema = load_schemas(
+        schema_files
+    )
 
     prompt = f"""
-You are generating Databricks SQL.
+    You are an expert Databricks SQL developer.
 
-Rules:
-- Return SQL only.
-- Use only tables and columns provided.
-- Never invent column names.
-- Never explain.
-- Never use markdown.
+    Rules:
+    - Return SQL only.
+    - Do not explain.
+    - Do not use markdown.
+    - Use only tables and columns provided.
+    - Never invent tables.
+    - Never invent columns.
 
-Schema:
+    Business Rules:
+    - If user asks "how many", use COUNT() or SUM().
+    - If user asks "total", use SUM().
+    - If user asks "average", use AVG().
+    - If user asks "highest", use MAX().
+    - If user asks "lowest", use MIN().
+    - Return a single aggregated answer whenever possible.
 
-{schema}
+    Rules for Aggregated Tables:
 
-Question:
+    If a table already contains aggregated metrics such as:
+    - loan_count
+    - customer_count
+    - total_balance
+    - total_outstanding_balance
 
-{question}
-"""
+    and the user asks for:
+    - total
+    - overall total
+    - how many
 
+    then use SUM() on the metric column.
+
+    Available Schemas:
+
+    {schema}
+
+    Examples:
+
+    Question:
+    How many loans do we have?
+
+    SQL:
+    SELECT SUM(loan_count)
+    FROM banklens.gold.gld_loan_portfolio
+
+    Question:
+    What is the total outstanding loan balance?
+
+    SQL:
+    SELECT SUM(total_outstanding_balance)
+    FROM banklens.gold.gld_loan_portfolio
+
+    Question:
+    How many HIGH risk customers do we have?
+
+    SQL:
+    SELECT COUNT(*)
+    FROM banklens.ml.churn_predictions
+    WHERE risk_band = 'HIGH'
+
+    Question:
+
+    {question}
+    """
     return prompt
 
 
 def generate_sql(question):
 
-    prompt = build_prompt(question)
-
-    result = subprocess.run(
-        [
-            "ollama",
-            "run",
-            MODEL_NAME
-        ],
-        input=prompt,
-        text=True,
-        capture_output=True
+    prompt = build_prompt(
+        question
     )
 
-    sql = result.stdout.strip()
+    sql = ask_ollama(
+        prompt
+    )
 
-    return sql
+    return sql.strip()
 
 
 if __name__ == "__main__":
 
-    question = (
+    sql = generate_sql(
         "How many HIGH risk customers do we have?"
     )
-
-    sql = generate_sql(question)
 
     print(sql)

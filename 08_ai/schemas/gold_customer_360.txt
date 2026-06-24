@@ -1,0 +1,13 @@
+Table: banklens.gold.gold_customer_360
+
+customer_id string
+customer_type string
+customer_since_date date
+total_accounts bigint
+total_products bigint
+total_loans bigint
+total_balance decimal(28,2)
+digital_sessions bigint
+support_tickets bigint
+nps_score int
+is_churn boolean

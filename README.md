@@ -34,6 +34,8 @@ BankLens simulates a modern banking data platform using the Medallion Architectu
 - Ubuntu (WSL)
 - Git
 - GitHub
+- CI/CD
+- GitHub Actions
 
 ---
 
